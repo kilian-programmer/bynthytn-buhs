@@ -3,15 +3,15 @@ import requests
 import base64
 import os
 import random
-import math
-from decimal import Decimal, getcontext
+from decimal import getcontext
 
-# Устанавливаем точность вычислений до 1100 знаков
-getcontext().prec = 1100
+# --- КОНФИГУРАЦИЯ И СТИЛИ ---
+getcontext().prec = 1100  # Точность вычислений
+st.set_page_config(page_title="Bynthytn buhs & Утилиты", page_icon="🎮", layout="centered")
 
 
-# --- ФУНКЦИЯ ДЛЯ УСТАНОВКИ ФОНА ---
 def set_background(image_file):
+    """Установка фонового изображения и стилей"""
     if os.path.exists(image_file):
         with open(image_file, "rb") as f:
             img_data = f.read()
@@ -29,269 +29,134 @@ def set_background(image_file):
             background-color: rgba(255, 255, 255, 0.9);
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
         }}
         </style>
         """
         st.markdown(style, unsafe_allow_html=True)
 
 
-# НАСТРОЙКА ИНТЕРФЕЙСА
-st.set_page_config(page_title="Bynthytn buhs & Утилиты", page_icon="🎮", layout="centered")
 set_background("background.png")
 
 st.title("🎮 Bynthytn buhs")
-st.write("Добро пожаловать на платформу `Bynthytn buhs`! Здесь собраны мои веб-приложения и полезные Python-скрипты.")
+st.write("Добро пожаловать! Инструменты, проекты и утилиты.")
 
-# Создаем горизонтальные вкладки (Добавили 4-ю вкладку для пожеланий!)
-tab1, tab2, tab3, tab4 = st.tabs(["🏠 Главная", "🔍 OSINT Инструмент", "🕹 Сектор проектов", "💬 Пожелания"])
+# Вкладки приложения
+tab1, tab2, tab3, tab4 = st.tabs(["🏠 Главная", "🔍 OSINT", "🕹 Генератор", "💬 Контакт"])
 
-# --- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА ---
+# --- ВКЛАДКА 1: ГЛАВНАЯ ---
 with tab1:
-    st.header("🕹 О проекте Bynthytn buhs")
-    st.write("Привет! Это моя личная секретная платформа, где я объединяю разработку полезного софта.")
+    st.header("О проекте")
+    st.write("Личная платформа: разработка и полезные скрипты.")
 
-    # ВСТРОЕННЫЙ СЧЁТЧИК ПОСЕТИТЕЛЕЙ
-    st.markdown("---")
-    st.markdown("### 📊 Статистика посещений хаба:")
-    col_stat1, col_stat2 = st.columns(2)
-    with col_stat1:
-        if os.path.exists("counter_icon.png"):
-            st.image("counter_icon.png", width=70)
-        elif os.path.exists("counter_icon.jpg"):
-            st.image("counter_icon.jpg", width=70)
-        else:
-            st.write("🎮")
-    with col_stat2:
-        if 'page_views' not in st.session_state: st.session_state.page_views = random.randint(12, 28)
-        st.session_state.page_views += 1
-        st.metric(label="Всего просмотров страниц:", value=st.session_state.page_views)
-    st.markdown("---")
+    # Счетчик
+    if 'page_views' not in st.session_state:
+        st.session_state.page_views = random.randint(10, 50)
+    st.metric(label="Просмотры", value=st.session_state.page_views)
 
-    st.subheader("🛠 На чем всё написано:")
-    st.write("- **Backend**: Python (Streamlit фреймворк)")
-    st.write("- **Интерфейс**: Веб-технологии и кастомный CSS-дизайн")
-
-# --- ВКЛАДКА 2: ВСТРОЕННЫЙ ИНСТРУМЕНТ OSINT ---
+# --- ВКЛАДКА 2: OSINT ---
 with tab2:
-    st.header("🔍 Инструмент OSINT и Поиска")
-    st.write("Полезная утилита для проверки номеров телефонов напрямую через API.")
-    phone = st.text_input("Введите номер телефона (например, 79991112233):", key="phone_input_final")
+    st.header("🔍 OSINT Инструмент")
+    phone = st.text_input("Введите номер (например, 79991112233):")
 
-    if st.button("Запустить анализ номера", key="btn_phone_final"):
+    if st.button("Анализ", key="osint_btn"):
         if phone:
-            with st.spinner("Пробиваем информацию по базам..."):
-                clean_phone = "".join(filter(str.isdigit, phone))
-                if clean_phone:
-                    try:
-                        base_url = "https://htmlweb.ru"
-                        query_params = {"json": 1, "tel": clean_phone}
-                        response = requests.get(base_url, params=query_params, timeout=10)
-                        if response.status_code == 200 and response.text.strip():
-                            data = response.json()
-                            if "error" in data:
-                                st.warning(f"Уведомление от сервера: {data['error'].get('message', 'Лимит исчерпан')}")
-                            else:
-                                country = data.get("country", {}).get("name", "Неизвестно")
-                                region = data.get("region", {}).get("name", "Неизвестно")
-                                operator = data.get("0", {}).get("oper", "Неизвестно")
-                                result_text = f"=== Анализ номера: +{clean_phone} ===\n\n📍 Страна: {country}\n🗺 Регион: {region}\n📱 Оператор: {operator}\n"
-                                st.text_area("Результат работы скрипта:", value=result_text, height=300)
-                        else:
-                            st.error("Ошибка сети или лимит запросов.")
-                    except Exception as e:
-                        st.error(f"Ошибка: {e}")
-                else:
-                    st.error("Неверный номер!")
-        else:
-            st.error("Введите номер!")
-
+            with st.spinner("Анализ..."):
+                try:
+                    # Упрощенный запрос к API
+                    data = requests.get(f"https://htmlweb.ru{phone}", timeout=5).json()
+                    if "error" in data:
+                        st.warning("Ошибка или лимит.")
+                    else:
+                        st.success(f"Регион: {data.get('region', {}).get('name', 'N/A')}")
+                except Exception as e:
+                    st.error(f"Ошибка: {e}")
 # --- ВКЛАДКА 4: ПУБЛИЧНЫЕ ПОЖЕЛАНИЯ И ОТЗЫВЫ ---
 with tab4:
     st.header("💬 Книга пожеланий сайта Bynthytn buhs")
-    st.write("Оставьте свой отзыв или предложение! Его увидят все посетители сайта.")
-
-    # Файл для хранения сообщений на сервере
-    feedback_file = "feedback.txt"
-
-    # Форма отправки отзыва
     user_name = st.text_input("Ваше имя или никнейм:", value="Аноним", max_chars=30)
-    user_text = st.text_area("Ваше пожелание или отзыв:", max_chars=300,
-                             placeholder="Напишите здесь что-нибудь приятное...")
+    user_text = st.text_area("Ваше пожелание или отзыв:", max_chars=300)
 
     if st.button("🚀 Отправить пожелание", key="send_feedback_btn"):
         if user_text.strip():
-            # Записываем сообщение в файл (Дозапись в конец строки)
-            with open(feedback_file, "a", encoding="utf-8") as f:
+            with open("feedback.txt", "a", encoding="utf-8") as f:
                 f.write(f"👤 {user_name.strip()}: {user_text.strip()}\n")
-            st.success("🎉 Спасибо! Ваш отзыв успешно опубликован. Обновите страницу, чтобы он появился в списке.")
+            st.success("🎉 Спасибо! Ваш отзыв опубликован.")
             st.balloons()
         else:
-            st.error("Пожалуйста, введите текст сообщения!")
+            st.error("Введите текст!")
 
     st.markdown("### 📜 Что пишут пользователи:")
-    # Читаем и выводим все отзывы на экран
-    if os.path.exists(feedback_file):
-        with open(feedback_file, "r", encoding="utf-8") as f:
-            comments = f.readlines()
-
-        # Показываем отзывы в обратном порядке (новые сверху)
-        for comment in reversed(comments):
-            if comment.strip():
-                st.info(comment.strip())
+    if os.path.exists("feedback.txt"):
+        with open("feedback.txt", "r", encoding="utf-8") as f:
+            for comment in reversed(f.readlines()):
+                if comment.strip(): st.info(comment.strip())
     else:
-        st.write("🕊 Пока здесь пусто. Будьте первым, кто оставит пожелание!")
-# --- ВКЛАДКА 3: СЕКТОР ПРОЕКТОВ (ПРОДОЛЖЕНИЕ) ---
+        st.write("🕊 Пока здесь пусто.")
+
+# --- ВКЛАДКА 3: СЕКТОР ПРОЕКТОВ ---
 with tab3:
     st.header("📁 Сектор проектов")
-    st.write("Нажмите на стрелочку рядом с категорией, чтобы открыть список приложений:")
 
-    # === 1. КАТЕГОРИЯ: Математические штучки ===
-    with st.expander("📁 Математические штучки"):
-        st.subheader("🧮 1. Супер-калькулятор (до 1000 знаков)")
-
-        num1_raw = st.text_area("Введите ПЕРВОЕ гигантское число (буквы сотрутся сами):", value="",
-                                placeholder="Только цифры...", key="big_num1")
-        st.write("Выберите математическое действие:")
+    with st.expander("📁 Математические штучки", expanded=True):
+        st.subheader("🧮 1. Супер-калькулятор")
+        num1_raw = st.text_area("Первое число:", key="big_num1")
         col1, col2, col3, col4 = st.columns(4)
         operation = None
-
-        with col1:
-            if st.button("➕ Сложить", use_container_width=True, key="op_plus"): operation = "+"
-        with col2:
-            if st.button("➖ Вычесть", use_container_width=True, key="op_minus"): operation = "-"
-        with col3:
-            if st.button("✖ Умножить", use_container_width=True, key="op_mult"): operation = "*"
-        with col4:
-            if st.button("➗ Разделить", use_container_width=True, key="op_div"): operation = "/"
-
-        num2_raw = st.text_area("Введите ВТОРОЕ гигантское число (буквы сотрутся сами):", value="",
-                                placeholder="Только цифры...", key="big_num2")
+        if col1.button("➕", use_container_width=True): operation = "+"
+        if col2.button("➖", use_container_width=True): operation = "-"
+        if col3.button("✖", use_container_width=True): operation = "*"
+        if col4.button("➗", use_container_width=True): operation = "/"
+        num2_raw = st.text_area("Второе число:", key="big_num2")
 
         if operation:
-            num1_clean = "".join(filter(str.isdigit, num1_raw))
-            num2_clean = "".join(filter(str.isdigit, num2_raw))
-
-            if num1_clean and num2_clean:
+            n1 = "".join(filter(str.isdigit, num1_raw))
+            n2 = "".join(filter(str.isdigit, num2_raw))
+            if n1 and n2:
                 try:
-                    d1 = Decimal(num1_clean)
-                    d2 = Decimal(num2_clean)
-                    if operation == "+":
-                        res = d1 + d2
-                    elif operation == "-":
-                        res = d1 - d2
-                    elif operation == "*":
-                        res = d1 * d2
-                    elif operation == "/":
-                        if d2 == 0:
-                            st.error("Ошибка: Деление на ноль невозможно!")
-                        else:
-                            res = d1 / d2
+                    from decimal import Decimal
 
-                    if res is not None:
-                        st.success(f"Результат математического действия ({operation}):")
-                        st.text_area("Итоговое число:", value=str(res), height=150)
+                    d1, d2 = Decimal(n1), Decimal(n2)
+                    res = {'+': d1 + d2, '-': d1 - d2, '*': d1 * d2, '/': d1 / d2 if d2 != 0 else "Error"}[operation]
+                    st.success(f"Результат ({operation}):")
+                    st.code(str(res))
                 except Exception as e:
-                    st.error(f"Ошибка вычислений: {e}")
+                    st.error(f"Ошибка: {e}")
             else:
-                st.error("Оба поля должны содержать хотя бы одну цифру!")
+                st.error("Введите числа!")
 
         st.markdown("---")
-        st.subheader("📐 2. Продвинутый калькулятор геометрии и тригонометрии (8-9 класс)")
+        st.subheader("📐 2. Геометрия (8-9 класс)")
+        math_mode = st.selectbox("Расчет:", ["Корень", "Круг", "Фигуры", "Тригонометрия", "Пифагор"])
+        import math
 
-        math_mode = st.selectbox(
-            "Что нужно рассчитать?", [
-                "Квадратный корень (Алгебра)",
-                "Расчет Круга (Радиус, Диаметр, Длина, Площадь)",
-                "Периметр и Площадь Многоугольников (Геометрия)",
-                "Тригонометрия (Синус, Косинус, Тангенс, Котангенс)",
-                "Теорема Пифагора"
-            ],
-            key="math_mode_select"
-        )
-
-
-        def show_compact_result(label, value):
-            s = f"{value:.4f}".rstrip('0').rstrip('.') if isinstance(value, float) else str(value)
-            if len(s) > 150:
-                st.markdown(f"**{label}** (первые 150 знаков):")
-                st.code(s[:150] + "...")
-                with st.expander("🔍 Показать полностью"):
-                    st.code(s)
-            else:
-                st.success(f"{label} = {s}")
-
-
-        if math_mode == "Квадратный корень (Алгебра)":
-            root_num = st.number_input("Введите число для извлечения корня:", min_value=0.0, value=25.0)
-            if st.button("Найти корень"): show_compact_result("√" + str(root_num), math.sqrt(root_num))
-
-        elif math_mode == "Расчет Круга (Радиус, Диаметр, Длина, Площадь)":
-            circle_input_type = st.radio("What вам известно?", ["Радиус", "Диаметр"], horizontal=True)
-            val = st.number_input("Введите значение:", min_value=0.01, value=5.0)
-            if st.button("Рассчитать круг"):
-                r = val if circle_input_type == "Радиус" else val / 2
-                st.markdown("### 📍 Результаты для круга:")
-                show_compact_result("Радиус (R)", r)
-                show_compact_result("Диаметр (D)", r * 2)
-                show_compact_result("Длина окружности (C)", 2 * math.pi * r)
-                show_compact_result("Площадь круга (S)", math.pi * (r ** 2))
-        elif math_mode == "Периметр и Площадь Многоугольников (Геометрия)":
-            shape = st.selectbox("Выберите фигуру:", ["Квадрат", "Прямоугольник", "Треугольник (произвольный)"])
-            if shape == "Квадрат":
-                side = st.number_input("Сторона квадрата (a):", min_value=0.0, value=4.0)
-                if st.button("Считать квадрат"):
-                    show_compact_result("Периметр", side * 4)
-                    show_compact_result("Площадь", side ** 2)
-            elif shape == "Прямоугольник":
-                a = st.number_input("Сторона a:", min_value=0.0, value=3.0)
-                b = st.number_input("Сторона b:", min_value=0.0, value=5.0)
-                if st.button("Считать прямоугольник"):
-                    show_compact_result("Периметр", (a + b) * 2)
-                    show_compact_result("Площадь", a * b)
-            elif shape == "Треугольник (произвольный)":
-                t1 = st.number_input("Сторона a:", min_value=0.0, value=3.0)
-                t2 = st.number_input("Сторона b:", min_value=0.0, value=4.0)
-                t3 = st.number_input("Сторона c:", min_value=0.0, value=5.0)
-                if st.button("Считать треугольник"):
-                    p = t1 + t2 + t3
-                    p_half = p / 2
-                    if t1 + t2 > t3 and t1 + t3 > t2 and t2 + t3 > t1:
-                        show_compact_result("Периметр", p)
-                        show_compact_result("Площадь",
-                                            math.sqrt(p_half * (p_half - t1) * (p_half - t2) * (p_half - t3)))
-                    else:
-                        st.error("Треугольник с такими сторонами не существует!")
-
-        elif math_mode == "Тригонометрия (Синус, Косинус, Тангенс, Котангенс)":
-            angle = st.number_input("Введите угол в градусах:", min_value=0.0, max_value=360.0, value=45.0)
-            if st.button("Найти тригонометрические функции"):
+        if math_mode == "Корень":
+            n = st.number_input("Число:", value=25.0)
+            if st.button("√x"): st.success(math.sqrt(n))
+        elif math_mode == "Круг":
+            r = st.number_input("Радиус:", value=5.0)
+            if st.button("Расчет"):
+                st.write(f"Окружность: {2 * math.pi * r:.2f}, Площадь: {math.pi * r ** 2:.2f}")
+        elif math_mode == "Фигуры":
+            sh = st.selectbox("Фигура", ["Квадрат", "Прямоугольник"])
+            a = st.number_input("Сторона a", value=4.0)
+            b = st.number_input("Сторона b", value=4.0)
+            if st.button("Считать"):
+                st.success(f"Периметр: {(a + b) * 2}, Площадь: {a * b}")
+        elif math_mode == "Тригонометрия":
+            angle = st.number_input("Угол (°)", value=45.0)
+            if st.button("sin/cos"):
                 rad = math.radians(angle)
-                st.success(f"📐 Результаты для угла {angle}°:")
-                st.write(f"- **Синус (sin)** = {math.sin(rad):.4f}")
-                st.write(f"- **Косинус (cos)** = {math.cos(rad):.4f}")
-
-        elif math_mode == "Теорема Пифагора":
-            pif_type = st.radio("Что ищем?", ["Гипотенузу (c)", "Катет (a или b)"], horizontal=True)
-            if pif_type == "Гипотенузу (c)":
-                katet1 = st.number_input("Введите первый катет:", min_value=0.01, value=3.0)
-                katet2 = st.number_input("Введите второй катет:", min_value=0.01, value=4.0)
-                if st.button("Найти гипотенузу"): show_compact_result("Гипотенуза c",
-                                                                      math.sqrt(katet1 ** 2 + katet2 ** 2))
-            else:
-                katet = st.number_input("Введите известный катет:", min_value=0.01, value=3.0)
-                gip = st.number_input("Введите известную гипотенузу:", min_value=0.01, value=5.0)
-                if st.button("Найти неизвестный катет"):
-                    if gip > katet:
-                        show_compact_result("Неизвестный катет", math.sqrt(gip ** 2 - katet ** 2))
-                    else:
-                        st.error("Гипотенуза должна быть больше катета!")
-
+                st.success(f"sin: {math.sin(rad):.4f}, cos: {math.cos(rad):.4f}")
+        elif math_mode == "Пифагор":
+            a = st.number_input("Катет a", value=3.0)
+            b = st.number_input("Катет b", value=4.0)
+            if st.button("Гипотенуза"): st.success(math.sqrt(a ** 2 + b ** 2))
     # === 2. КАТЕГОРИЯ: Mini игры ненадолго ===
     with st.expander("📁 Mini игры ненадолго"):
-        st.write("🕹 Быстрые игры, чтобы скоротать пару минут.")
         st.markdown("### 🔢 Игра: Угадай число")
-        if 'secret_number' not in st.session_state: st.session_state.secret_number = random.randint(1, 20)
+        if 'secret_number' not in st.session_state:
+            st.session_state.secret_number = random.randint(1, 20)
+
         user_guess = st.number_input("Введите число от 1 до 20:", min_value=1, max_value=20, step=1, key="game_guess")
         if st.button("Проверить число", key="btn_game"):
             if user_guess < st.session_state.secret_number:
@@ -306,20 +171,42 @@ with tab3:
     # === 3. КАТЕГОРИЯ: Полезные скрипты ===
     with st.expander("📁 Полезные скрипты"):
         st.subheader("🔑 1. Генератор неуязвимых хакерских паролей")
+
         pass_len = st.slider("Выберите длину пароля:", min_value=6, max_value=32, value=12)
 
+        # Новый блок настроек символов для пароля
+        st.write("Настройка состава пароля:")
+        use_lowercase = st.checkbox("Только строчные буквы (abc...)", value=False)
+        use_uppercase = st.checkbox("Добавить заглавные буквы (ABC...)", value=True)
+        use_digits = st.checkbox("Добавить цифры (123...)", value=True)
+        use_specials = st.checkbox("Добавить спецсимволы (!@#...)", value=False)
+
         if st.button("Сгенерировать пароль", key="gen_pass_btn"):
-            chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*"
+            # Создаем базу символов на основе выбора пользователя
+            chars = ""
+            if use_lowercase or (not use_uppercase and not use_digits and not use_specials):
+                chars += "abcdefghijklmnopqrstuvwxyz"
+            if use_uppercase:
+                chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                if not use_lowercase and not chars:  # Защита от пустой строки
+                    chars += "abcdefghijklmnopqrstuvwxyz"
+            if use_digits:
+                chars += "1234567890"
+            if use_specials:
+                chars += "!@#$%^&*"
+
+            # Генерация пароля
             new_password = "".join(random.choice(chars) for _ in range(pass_len))
             st.success("🔒 Ваш безопасный пароль:")
             st.code(new_password)
 
+            # Оценка надежности
             if pass_len < 8:
-                st.warning("⚠️ Этот пароль взломают за 5 секунд! Сделайте длиннее.")
+                st.warning("⚠ Этот пароль взломают за 5 секунд! Сделайте длиннее.")
             elif pass_len < 12:
                 st.info("👍 Хороший пароль. На взлом уйдёт около 2 лет.")
             else:
-                st.success("😎 Сверхнадёжный суперпароль! На его взлом уйдёт 4 миллиарда лет.")
+                st.success("😎 Сверхнадёжный суперпароль!")
 
         st.markdown("---")
         st.subheader("🌦 2. Живой информер погоды")
