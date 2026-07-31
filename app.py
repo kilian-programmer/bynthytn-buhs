@@ -54,7 +54,7 @@ with tab1:
     # ВСТРОЕННЫЙ СЧЁТЧИК ПОСЕТИТЕЛЕЙ
     st.markdown("---")
     st.markdown("### 📊 Статистика посещений хаба:")
-    col_stat1, col_stat2 = st.columns()
+    col_stat1, col_stat2 = st.columns(2)
     with col_stat1:
         if os.path.exists("counter_icon.png"):
             st.image("counter_icon.png", width=70)
