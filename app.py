@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import base64
 import os
@@ -36,52 +37,37 @@ def set_background_and_counter(image_file):
         border-radius: 15px;
         box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
     }}
-    /* СТИЛИ ДЛЯ ВИДЖЕТА СТАТИСТИКИ В УГЛУ ЭКРАНА */
-    .online-counter-box {{
+    /* Закрепляем контейнер с фреймом счетчика в правом углу */
+    .counter-wrapper {{
         position: fixed;
-        top: 60px;
+        top: 65px;
         right: 20px;
-        background: rgba(0, 0, 0, 0.75);
-        color: #00ffcc;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-family: 'Courier New', monospace;
-        font-size: 12px;
-        border: 1px solid #00ffcc;
-        box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
         z-index: 999999;
-    }}
-    .online-dot {{
-        height: 8px;
-        width: 8px;
-        background-color: #00ffcc;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 5px;
-        animation: blink 1.5s infinite;
-    }}
-    @keyframes blink {{
-        0% {{ opacity: 0.3; }}
-        50% {{ opacity: 1; }}
-        100% {{ opacity: 0.3; }}
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid #00ffcc;
+        border-radius: 8px;
+        padding: 3px;
+        box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
     }}
     </style>
     """
     st.markdown(custom_css, unsafe_allow_html=True)
 
-    # ВСТРАИВАЕМ СЧЁТЧИК НАПРЯМУЮ СЕРВИСОМ СТАТИСТИКИ (БЕЗ РЕГИСТРАЦИЙ)
-    # Мы используем надёжный бесплатный счётчикFC2, настроенный под скрытый учёт данных
+    # Полный изолированный HTML-код счетчика, который Streamlit не сможет заблокировать
     counter_html = """
-    <div class="online-counter-box">
-        <div><span class="online-dot"></span><strong>Bynthytn buhs Статистика</strong></div>
-        <hr style="margin: 5px 0; border-color: #00ffcc;">
-        <!-- Скрипт счётчика FC2 перехватывает сессии и считает общие визиты и живой онлайн -->
+    <div style="color: #00ffcc; font-family: 'Courier New', monospace; font-size: 11px; text-align: center; width: 140px; background: transparent; padding: 5px;">
+        <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">📊 СТАТИСТИКАХАБ</div>
+        <hr style="margin: 3px 0; border-color: #00ffcc;">
+        <!-- Живой информер, собирающий онлайн и просмотры -->
         <script language="javascript" type="text/javascript" src="//://fc2.com"></script>
         <noscript><img src="//://fc2.com" /></noscript>
-        <div style="font-size: 10px; color: #aaa; margin-top: 3px;">Обновление: в реальном времени</div>
     </div>
     """
-    st.components.v1.html(counter_html, height=100)
+
+    # Встраиваем счетчик через безопасный контейнер компонентов
+    st.markdown('<div class="counter-wrapper">', unsafe_allow_html=True)
+    components.html(counter_html, width=150, height=55, scrolling=False)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # НАСТРОЙКА ИНТЕРФЕЙСА
