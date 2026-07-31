@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import requests
 import base64
 import os
@@ -11,68 +10,35 @@ from decimal import Decimal, getcontext
 getcontext().prec = 1100
 
 
-# --- ФУНКЦИЯ ДЛЯ УСТАНОВКИ ФОНА И КРАСИВОГО СЧЁТЧИКА ОНЛАЙНА ---
-def set_background_and_counter(image_file):
-    style = ""
+# --- ФУНКЦИЯ ДЛЯ УСТАНОВКИ ФОНА ---
+def set_background(image_file):
     if os.path.exists(image_file):
         with open(image_file, "rb") as f:
             img_data = f.read()
         b64_encoded = base64.b64encode(img_data).decode()
-        style += f"""
-        background-image: url("data:image/png;base64,{b64_encoded}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
+        style = f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{b64_encoded}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        .stTabs {{
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+        }}
+        </style>
         """
-
-    custom_css = f"""
-    <style>
-    .stApp {{
-        {style}
-    }}
-    .stTabs {{
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-    }}
-    /* Закрепляем контейнер с фреймом счетчика в правом углу */
-    .counter-wrapper {{
-        position: fixed;
-        top: 65px;
-        right: 20px;
-        z-index: 999999;
-        background: rgba(0, 0, 0, 0.8);
-        border: 1px solid #00ffcc;
-        border-radius: 8px;
-        padding: 3px;
-        box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-    }}
-    </style>
-    """
-    st.markdown(custom_css, unsafe_allow_html=True)
-
-    # Полный изолированный HTML-код счетчика, который Streamlit не сможет заблокировать
-    counter_html = """
-    <div style="color: #00ffcc; font-family: 'Courier New', monospace; font-size: 11px; text-align: center; width: 140px; background: transparent; padding: 5px;">
-        <div style="font-weight: bold; margin-bottom: 4px; font-size: 10px;">📊 СТАТИСТИКАХАБ</div>
-        <hr style="margin: 3px 0; border-color: #00ffcc;">
-        <!-- Живой информер, собирающий онлайн и просмотры -->
-        <script language="javascript" type="text/javascript" src="//://fc2.com"></script>
-        <noscript><img src="//://fc2.com" /></noscript>
-    </div>
-    """
-
-    # Встраиваем счетчик через безопасный контейнер компонентов
-    st.markdown('<div class="counter-wrapper">', unsafe_allow_html=True)
-    components.html(counter_html, width=150, height=55, scrolling=False)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(style, unsafe_allow_html=True)
 
 
 # НАСТРОЙКА ИНТЕРФЕЙСА
 st.set_page_config(page_title="Bynthytn buhs & Утилиты", page_icon="🎮", layout="centered")
-set_background_and_counter("background.png")
+set_background("background.png")
 
 st.title("🎮 Bynthytn buhs")
 st.write("Добро пожаловать на платформу `Bynthytn buhs`! Здесь собраны мои веб-приложения и полезные Python-скрипты.")
@@ -80,10 +46,25 @@ st.write("Добро пожаловать на платформу `Bynthytn buhs
 # Создаем горизонтальные вкладки
 tab1, tab2, tab3 = st.tabs(["🏠 Главная", "🔍 OSINT Инструмент", "🕹 Сектор проектов"])
 
-# --- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА ---
+# --- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА (С НАСТОЯЩИМ СЧЁТЧИКОМ) ---
 with tab1:
     st.header("🕹 О проекте Bynthytn buhs")
     st.write("Привет! Это моя личная секретная платформа, где я объединяю разработку полезного софта.")
+
+    # ВСТРОЕННЫЙ СЧЁТЧИК ПОСЕТИТЕЛЕЙ (Картинка-информер, которая считает каждый заход)
+    st.markdown("---")
+    st.markdown("### 📊 Статистика посещений хаба:")
+
+    # Этот сервис генерирует уникальный счётчик для вашей ссылки в реальном времени
+    counter_url = "https://hitcount.site"
+
+    col_stat1, col_stat2 = st.columns([1, 3])
+    with col_stat1:
+        st.image(counter_url, caption="Всего просмотров", use_container_width=False)
+    with col_stat2:
+        st.write("Каждый раз, когда кто-то открывает или обновляет эту страницу, счётчик автоматически увеличивается!")
+    st.markdown("---")
+
     st.subheader("🛠 На чем всё написано:")
     st.write("- **Backend**: Python (Streamlit фреймворк)")
     st.write("- **Интерфейс**: Веб-технологии и кастомный CSS-дизайн")
@@ -185,7 +166,7 @@ with tab3:
         math_mode = st.selectbox(
             "Что нужно рассчитать?", [
                 "Квадратный корень (Алгебра)",
-                "Расчет Круга (Radius, Диаметр, Длина, Площадь)",
+                "Расчет Круга (Радиус, Диаметр, Длина, Площадь)",
                 "Периметр и Площадь Многоугольников (Геометрия)",
                 "Тригонометрия (Синус, Косинус, Тангенс, Котангенс)",
                 "Теорема Пифагора"
@@ -277,7 +258,7 @@ with tab3:
 
         # Подмодуль: Теорема Пифагора
         elif math_mode == "Теорема Пифагора":
-            pif_type = st.radio("Что ищем?", ["Гипотенузу (c)", "Катет (a или b)"], horizontal=True)
+            pif_type = st.radio("What ищем?", ["Гипотенузу (c)", "Катет (a или b)"], horizontal=True)
             if pif_type == "Гипотенузу (c)":
                 katet1 = st.number_input("Введите первый катет:", min_value=0.01, value=3.0)
                 katet2 = st.number_input("Введите второй катет:", min_value=0.01, value=4.0)
@@ -294,8 +275,8 @@ with tab3:
                     else:
                         st.error("Гипотенуза должна быть больше катета!")
 
-    # === 2. КАТЕГОРИЯ: Мини игры ненадолго ===
-    with st.expander("📁 Мини игры ненадолго"):
+    # === 2. КАТЕГОРИЯ: Mini игры ненадолго ===
+    with st.expander("📁 Mini игры ненадолго"):
         st.write("🕹 Быстрые игры, чтобы скоротать пару минут.")
         st.markdown("### 🔢 Игра: Угадай число")
         if 'secret_number' not in st.session_state:
